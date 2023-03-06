@@ -1,0 +1,13 @@
+SELECT person.id,name FROM drivers_license
+JOIN person 
+ON drivers_license.id = person.license_id 
+WHERE hair_color = 'red' AND height BETWEEN 65 AND 67 
+AND lower(car_make) = 'tesla'
+AND lower(car_model) = 'model s';
+
+SELECT person_id, name FROM facebook_event_checkin
+JOIN person on person.id = facebook_event_checkin.person_id
+WHERE event_name = 'SQL Symphony Concert'
+AND date LIKE '201712__'
+GROUP BY person_id 
+HAVING count(person_id) = 3;
