@@ -29,3 +29,9 @@ JOIN percentiles p ON f.state = p.state
 WHERE fraud_score >= percentile
 
 -- join over sub query
+
+select policy_num, state, claim_cost, fraud_score
+from (
+    select *,  NTILE(100) OVER(partition by state order by fraud_score desc) as percentile
+    from fraud_score) result
+where percentile <=5
