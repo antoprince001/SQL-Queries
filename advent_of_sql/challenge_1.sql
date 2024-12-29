@@ -63,11 +63,30 @@ SELECT * FROM toy_catalogue;
 WITH parsed_wished_list as (SELECT 
 list_id, 
 child_id, 
-wishes->>'first_choice' as first_choice,
-wishes->>'second_choice' as second_choice,
-wishes->>'colors' as favorite_color, -- indexing starts at 1
+wishes->>'first_choice' as primary_wish,
+wishes->>'second_choice' as backup_wish,
+string_to_array(substr(wishes->>'colors', 2, length(wishes->>'colors') - 2),',')
+as favorite_colors,						
 submitted_date
 FROM wish_lists)
 
-SELECT favorite_color::text[],pg_typeof(favorite_color) FROM parsed_wished_list
+SELECT ch.name, 
+pwl.primary_wish,
+pwl.backup_wish,
+trim(both '"' FROM pwl.favorite_colors[1]) as favorite_color,
+array_length(pwl.favorite_colors,1) as color_count,
+CASE WHEN difficulty_to_make > 2 THEN 'Complex Gift' 
+WHEN difficulty_to_make = 2 THEN 'Moderate Gift'  
+WHEN difficulty_to_make = 1 THEN 'Simple Gift' 
+ELSE NULL END AS gift_complexity,
+CASE WHEN category = 'outdoor' THEN 'Outside Workshop' 
+WHEN category = 'educational' THEN 'Learning Workshop'  
+ELSE 'General Workshop'  END AS workshop_assignment
+FROM children ch
+left join parsed_wished_list pwl 
+on ch.child_id = pwl.child_id
+left join toy_catalogue
+on pwl.primary_wish = toy_catalogue.toy_name
+ORDER BY ch.name
+limit 5;
 
